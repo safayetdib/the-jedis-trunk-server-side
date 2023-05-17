@@ -41,7 +41,15 @@ async function run() {
 			res.send(result);
 		});
 
-		// get a toy details by id
+		// get toys data by seller email
+		app.get('/toys/:seller', async (req, res) => {
+			const seller = req.params.seller;
+			const query = { seller_email: seller };
+			const result = await toyCollection.find(query).toArray();
+			res.send(result);
+		});
+
+		// get a toy data by id
 		app.get('/toys/:id', async (req, res) => {
 			const id = req.params.id;
 			const query = { _id: new ObjectId(id) };
