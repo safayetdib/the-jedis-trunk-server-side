@@ -10,8 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB
-
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.dc2rluc.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
@@ -25,6 +24,45 @@ const client = new MongoClient(uri, {
 async function run() {
 	try {
 		await client.connect();
+
+		const toyCollection = client.db('theJedisTrunk').collection('toys');
+
+		// get all toys data : limit 20
+		app.get('/toys', async (req, res) => {
+			const page = parseInt(req.query.page) || 0;
+			const limit = parseInt(req.query.limit) || 20;
+			const skip = page * limit;
+
+			const result = await toyCollection
+				.find()
+				.skip(skip)
+				.limit(limit)
+				.toArray();
+			res.send(result);
+		});
+
+		// get a toy details by id
+		app.get('/toys/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: new ObjectId(id) };
+			const result = await toyCollection.findOne(query);
+			res.send(result);
+		});
+
+		// add a new toy data
+		app.post('/toys/new', async (req, res) => {
+			const newToy = req.body;
+			const result = await toyCollection.insertOne(newToy);
+			res.send(result);
+		});
+
+		// delete a toy data
+		app.delete('/toys/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: new ObjectId(id) };
+			const result = await toyCollection.deleteOne(query);
+			res.send(result);
+		});
 
 		await client.db('admin').command({ ping: 1 });
 		console.log(
