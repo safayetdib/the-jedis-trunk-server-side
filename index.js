@@ -23,9 +23,17 @@ const client = new MongoClient(uri, {
 
 async function run() {
 	try {
-		// await client.connect();
-
+		// collections
+		const categoriesCollection = client
+			.db('theJedisTrunk')
+			.collection('categories');
 		const toyCollection = client.db('theJedisTrunk').collection('toys');
+
+		// get categories data
+		app.get('/categories', async (req, res) => {
+			const result = await categoriesCollection.find().toArray();
+			res.send(result);
+		});
 
 		// get all toys data : limit 20
 		app.get('/toys', async (req, res) => {
@@ -38,6 +46,14 @@ async function run() {
 				.skip(skip)
 				.limit(limit)
 				.toArray();
+			res.send(result);
+		});
+
+		// get toys data by category
+		app.get('/toys/category/:category', async (req, res) => {
+			const category = req.params.category;
+			const query = { category: category };
+			const result = await toyCollection.find(query).toArray();
 			res.send(result);
 		});
 
