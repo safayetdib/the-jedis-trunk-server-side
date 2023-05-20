@@ -6,6 +6,7 @@
 		"activityBar.inactiveForeground": "#ffffff",
 		"statusBar.background": "#f5f5f5",
 		"statusBar.foreground": "#000",
+		"titleBar.inactiveBackground": "#fff",
 		"titleBar.activeBackground": "#ccc",
 		"titleBar.activeForeground": "#000"
 	}

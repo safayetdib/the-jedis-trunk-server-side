@@ -58,9 +58,9 @@ async function run() {
 		});
 
 		// get toys data by seller email
-		app.get('/toys/:seller', async (req, res) => {
-			const seller = req.params.seller;
-			const query = { seller_email: seller };
+		app.get('/my-toys', async (req, res) => {
+			const seller_email = req.query.email;
+			const query = { seller_email };
 			const result = await toyCollection.find(query).toArray();
 			res.send(result);
 		});
@@ -74,18 +74,38 @@ async function run() {
 		});
 
 		// add a new toy data
-		app.post('/toys/new', async (req, res) => {
+		app.post('/toy/add', async (req, res) => {
 			const newToy = req.body;
 			const result = await toyCollection.insertOne(newToy);
-			res.send(result);
+			if (result.insertedId !== undefined) {
+				res.send({
+					success: true,
+					message: 'A new toy is added successfully!',
+				});
+			} else {
+				res.send({
+					success: false,
+					message: 'Something went wrong. Please try again later.',
+				});
+			}
 		});
 
 		// delete a toy data
-		app.delete('/toys/:id', async (req, res) => {
+		app.delete('/toy/:id', async (req, res) => {
 			const id = req.params.id;
 			const query = { _id: new ObjectId(id) };
 			const result = await toyCollection.deleteOne(query);
-			res.send(result);
+			if (result.deletedCount === 1) {
+				res.send({
+					success: true,
+					message: 'Successfully deleted!',
+				});
+			} else {
+				res.send({
+					success: false,
+					message: 'No toys matched the query. Deleted 0 toys.',
+				});
+			}
 		});
 
 		await client.db('admin').command({ ping: 1 });
