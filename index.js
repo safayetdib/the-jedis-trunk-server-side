@@ -39,10 +39,12 @@ async function run() {
 		app.get('/toys', async (req, res) => {
 			const page = parseInt(req.query.page) || 0;
 			const limit = parseInt(req.query.limit) || 20;
+			const sort = { price: req.query.sort };
 			const skip = page * limit;
 
 			const result = await toyCollection
 				.find()
+				.sort(sort)
 				.skip(skip)
 				.limit(limit)
 				.toArray();
@@ -60,8 +62,14 @@ async function run() {
 		// get toys data by seller email
 		app.get('/my-toys', async (req, res) => {
 			const seller_email = req.query.email;
+			const order = req.query.sort;
 			const query = { seller_email };
-			const result = await toyCollection.find(query).toArray();
+			const sortByPrice = { price: order };
+			console.log(sortByPrice);
+			const result = await toyCollection
+				.find(query)
+				.sort(sortByPrice)
+				.toArray();
 			res.send(result);
 		});
 
@@ -90,12 +98,39 @@ async function run() {
 			}
 		});
 
+		// update a toy data
+		app.patch('/toy-update/:id', async (req, res) => {
+			const id = req.params.id;
+			const data = req.body;
+			const filter = { _id: new ObjectId(id) };
+			const updatedData = {
+				$set: {
+					description: data.description,
+					price: data.price,
+					quantity: data.quantity,
+				},
+			};
+			const result = await toyCollection.updateOne(filter, updatedData);
+			console.log(result);
+			if (result.modifiedCount > 0) {
+				res.send({
+					success: true,
+					message: 'Updated Successfully!',
+				});
+			} else {
+				res.send({
+					success: false,
+					message: 'Please update data or try again later!',
+				});
+			}
+		});
+
 		// delete a toy data
 		app.delete('/toy/:id', async (req, res) => {
 			const id = req.params.id;
 			const query = { _id: new ObjectId(id) };
 			const result = await toyCollection.deleteOne(query);
-			if (result.deletedCount === 1) {
+			if (result.deletedCount > 0) {
 				res.send({
 					success: true,
 					message: 'Successfully deleted!',
